@@ -34,7 +34,7 @@ movie-review-app/
 │   └── .streamlit/
 │       └── secrets.toml.example
 ├── docker-compose.yml          # 백엔드+프론트엔드 통합 실행
-└── report/
+└── reports/
     └── 보고서.pdf
 ```
 
