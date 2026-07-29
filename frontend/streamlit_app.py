@@ -14,9 +14,9 @@ streamlit_app.py
   2) 영화 추가   : 제목/개봉일/감독/장르/포스터 URL 입력 후 등록
   3) 리뷰        : 영화 선택 → 리뷰 작성(감성 자동 분석) + 최근 10개 리뷰 표시
 
-참고
-  1) 포스터 이미지 생성 방법
-  - "https://www.themoviedb.org/" TMDB(영화 데이터베이스) 웹페이지 접속 → 영화 검색 → 포스터 우클릭 → "이미지 주소 복사(Copy image address)"
+포스터 이미지 생성 방법
+  1) 나무위키 웹페이지 접속 → 영화 검색 → 포스터 우클릭 → "이미지 주소 복사(Copy image address)"
+  2) "https://www.themoviedb.org/" TMDB(영화 데이터베이스) 웹페이지 접속 → 영화 검색 → 포스터 우클릭 → "이미지 주소 복사(Copy image address)"
 """
 
 import os
