@@ -76,6 +76,31 @@ streamlit run streamlit_app.py
 
 ---
 
+## 🔆 GCP 리눅스 서버 백엔드 배포 방법
+
+```bash
+# 배포 명령어
+# `--memory 512Mi` → `--memory 2Gi` (모델 담을 공간)
+# `--cpu 2` 추가
+# `--cpu-boost` 추가 (CPU 부스트 — 이게 핵심)
+# `--timeout 300` 추가
+gcloud run deploy movie-review-api-service \
+--image asia-northeast3-docker.pkg.dev/backend-movie-review/movie-review-api-repo/movie-review-api:v1 \
+--region asia-northeast3 \
+--port 8000 \
+--memory 2Gi \
+--cpu 2 \
+--cpu-boost \
+--min-instances 0 \
+--max-instances 3 \
+--timeout 300 \
+--allow-unauthenticated \
+--set-env-vars "CORS_ORIGINS=https://codeit-movie-review.streamlit.app" \
+--set-secrets "API_KEYS=movie-review-api-keys:latest"
+```
+
+---
+
 ## 🔑 환경변수
 
 | 변수 | 위치 | 기본값 | 설명 |
