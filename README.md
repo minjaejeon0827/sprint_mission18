@@ -8,8 +8,8 @@
 - **감성 분석**: KcELECTRA 계열 한국어 모델 + 규칙 기반 폴백
 - **GitHub**: [바로가기](https://github.com/minjaejeon0827/sprint_mission18)
 - **Docker Hub**
-    - **프론트엔드**: [바로가기](https://hub.docker.com/r/minjaejeon0827/sprint_mission18-frontend-movie-review)
-    - **백엔드**: [바로가기](https://hub.docker.com/r/minjaejeon0827/sprint_mission18-backend-movie-review)
+    - **프론트엔드**: [바로가기](https://hub.docker.com/r/minjaejeon0827/frontend-movie-review)
+    - **백엔드**: [바로가기](https://hub.docker.com/r/minjaejeon0827/backend-movie-review)
 
 ---
 
