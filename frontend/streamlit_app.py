@@ -192,7 +192,7 @@ with tab_list:
             cols = st.columns(per_row)
             for idx, movie in enumerate(movies):
                 with cols[idx % per_row]:
-                    with st.container(border=True):
+                    with st.container(border=True, horizontal_alignment="center"):
                         # 포스터 표시 (안전하게)
                         #  - poster_url 이 None/빈문자열이면 건너뜀
                         #  - URL 이 있어도 깨진 주소/로딩 실패 시 앱이 죽지 않도록
