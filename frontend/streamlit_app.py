@@ -19,7 +19,7 @@ streamlit_app.py
   2) "https://www.themoviedb.org/" TMDB(영화 데이터베이스) 웹페이지 접속 → 영화 검색 → 포스터 우클릭 → "이미지 주소 복사(Copy image address)"
 
 참고
-  - Streamlit st.image: https://docs.streamlit.io/develop/api-reference/media/st.image
+  - Streamlit: https://docs.streamlit.io/develop/api-reference/media/st.image
 """
 
 import os
@@ -84,26 +84,50 @@ def sentiment_badge(sentiment: str) -> str:
         "부정": "😞 부정",
         "중립": "😐 중립",
     }.get(sentiment, sentiment or "-")
-    
-def show_image_responsive(image):
+  
+def show_image_responsive(image, width=None):
     """
-    st.image 를 Streamlit 버전에 상관없이 '가로 폭 꽉 채우기'로 표시합니다.
+    st.image 를 Streamlit 버전에 상관없이 안전하게 표시합니다.
 
-    - Streamlit 1.36+ : st.image(..., use_container_width=True)
-    - 그 이전 버전     : st.image(..., use_column_width=True)
-    배포 환경의 Streamlit 버전이 낮아
-      "unexpected keyword argument 'use_container_width'"
-    오류가 나는 경우를 자동으로 회피합니다.
+    - width 를 지정하면 그 픽셀 너비로 '작게 고정'해서 표시합니다.
+      (포스터가 너무 커지는 것을 막는 용도. width 는 모든 버전에서 지원)
+    - width 가 없으면 컨테이너 폭에 맞춰 표시합니다.
+      · Streamlit 1.36+ : use_container_width=True
+      · 그 이전 버전     : use_column_width=True
+      · 아주 옛 버전     : 인자 없이
     """
+    if width is not None:
+        st.image(image, width=width)
+        return
     try:
         st.image(image, use_container_width=True)
     except TypeError:
-        # 구버전 폴백 (use_container_width 미지원)
         try:
             st.image(image, use_column_width=True)
         except TypeError:
-            # 두 인자 모두 없는 아주 옛 버전 → 인자 없이 표시
             st.image(image)
+
+  
+# 아래 주석친 코드 필요 시 참고(2026.07.29 minjae)  
+# def show_image_responsive(image):
+#     """
+#     st.image 를 Streamlit 버전에 상관없이 '가로 폭 꽉 채우기'로 표시합니다.
+
+#     - Streamlit 1.36+ : st.image(..., use_container_width=True)
+#     - 그 이전 버전     : st.image(..., use_column_width=True)
+#     배포 환경의 Streamlit 버전이 낮아
+#       "unexpected keyword argument 'use_container_width'"
+#     오류가 나는 경우를 자동으로 회피합니다.
+#     """
+#     try:
+#         st.image(image, use_container_width=True)
+#     except TypeError:
+#         # 구버전 폴백 (use_container_width 미지원)
+#         try:
+#             st.image(image, use_column_width=True)
+#         except TypeError:
+#             # 두 인자 모두 없는 아주 옛 버전 → 인자 없이 표시
+#             st.image(image)
 
 # ==================================================================
 #  페이지 기본 설정
@@ -116,13 +140,29 @@ st.caption("FastAPI 백엔드 + Streamlit 프론트엔드 · 리뷰 감성 자�
 # 사이드바: 백엔드 연결 상태 표시
 with st.sidebar:
     st.header("⚙️ 연결 정보")
-    # 필요 시 아래 주석친 코드 참고(2026.07.29 minjae)
+    # 아래 주석친 코드 필요 시 참고(2026.07.29 minjae)
     # st.write(f"**백엔드**: `{API_URL}`")
     health = api_get("/health")
     if health is not None and health.status_code == 200:
         st.success("✅ 백엔드 연결됨")
     else:
         st.error("❌ 백엔드 연결 실패")
+    st.divider()
+
+    # ── 화면 표시 설정 (포스터 크기 조절) ──
+    st.subheader("🖼️ 화면 설정")
+    st.slider(
+        "포스터 크기 (px)",
+        min_value=80, max_value=320, value=160, step=20,
+        key="poster_width",
+        help="영화 포스터 이미지의 가로 크기를 조절합니다.",
+    )
+    st.slider(
+        "한 줄에 표시할 영화 수",
+        min_value=2, max_value=6, value=4, step=1,
+        key="cards_per_row",
+        help="한 줄에 나란히 보여줄 영화 카드 개수입니다.",
+    )
     st.divider()
     st.caption("모든 데이터는 백엔드에서 관리됩니다.")
 
@@ -142,19 +182,26 @@ with tab_list:
         if not movies:
             st.info("아직 등록된 영화가 없습니다. '영화 추가' 탭에서 등록해보세요.")
         else:
-            # 3열 그리드로 영화 카드 배치
-            cols = st.columns(3)
+            # 한 줄에 표시할 영화 수 & 포스터 너비 (사이드바 슬라이더에서 설정)
+            per_row = st.session_state.get("cards_per_row", 4)
+            poster_w = st.session_state.get("poster_width", 160)
+
+            # per_row 열 그리드로 영화 카드 배치
+            cols = st.columns(per_row)
             for idx, movie in enumerate(movies):
-                with cols[idx % 3]:
+                with cols[idx % per_row]:
                     with st.container(border=True):
                         # 포스터 표시 (안전하게)
                         #  - poster_url 이 None/빈문자열이면 건너뜀
                         #  - URL 이 있어도 깨진 주소/로딩 실패 시 앱이 죽지 않도록
                         #    try/except 로 감싸고, 실패하면 대체 문구를 보여줌
+                        #  - poster_w(픽셀 너비)로 크기를 고정해 너무 커지지 않게 함
                         poster = movie.get("poster_url")
                         if poster and isinstance(poster, str) and poster.strip():
                             try:
-                                show_image_responsive(poster)
+                                # 아래 주석친 코드 필요 시 참고(2026.07.29 minjae)
+                                # show_image_responsive(poster)
+                                show_image_responsive(poster, width=poster_w)
                             except Exception as e:
                                 st.error(str(e))
                                 st.caption("🖼️ 포스터를 불러올 수 없습니다.")
