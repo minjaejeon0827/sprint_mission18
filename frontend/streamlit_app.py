@@ -81,7 +81,26 @@ def sentiment_badge(sentiment: str) -> str:
         "부정": "😞 부정",
         "중립": "😐 중립",
     }.get(sentiment, sentiment or "-")
+    
+def show_image_responsive(image):
+    """
+    st.image 를 Streamlit 버전에 상관없이 '가로 폭 꽉 채우기'로 표시합니다.
 
+    - Streamlit 1.36+ : st.image(..., use_container_width=True)
+    - 그 이전 버전     : st.image(..., use_column_width=True)
+    배포 환경의 Streamlit 버전이 낮아
+      "unexpected keyword argument 'use_container_width'"
+    오류가 나는 경우를 자동으로 회피합니다.
+    """
+    try:
+        st.image(image, use_container_width=True)
+    except TypeError:
+        # 구버전 폴백 (use_container_width 미지원)
+        try:
+            st.image(image, use_column_width=True)
+        except TypeError:
+            # 두 인자 모두 없는 아주 옛 버전 → 인자 없이 표시
+            st.image(image)
 
 # ==================================================================
 #  페이지 기본 설정
@@ -132,7 +151,7 @@ with tab_list:
                         poster = movie.get("poster_url")
                         if poster and isinstance(poster, str) and poster.strip():
                             try:
-                                st.image(poster, use_container_width=True)
+                                show_image_responsive(poster)
                             except Exception as e:
                                 st.error(str(e))
                                 st.caption("🖼️ 포스터를 불러올 수 없습니다.")
