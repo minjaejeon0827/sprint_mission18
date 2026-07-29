@@ -271,6 +271,7 @@ with tab_add:
                 r = api_post("/movies", json=payload)
                 if r is not None and r.status_code == 201:
                     st.success(f"'{title}' 영화가 등록되었습니다! '영화 목록' 탭에서 확인하세요.")
+                    st.rerun()
                 elif r is not None:
                     st.error(f"등록 실패: {r.status_code} - {r.text}")
 
@@ -318,6 +319,7 @@ with tab_review:
                             f"감성 분석 결과: **{sentiment_badge(data['sentiment'])}** "
                             f"(긍정 확률 {data['score']*100:.0f}%)"
                         )
+                        st.rerun()
                     elif r is not None:
                         st.error(f"등록 실패: {r.status_code} - {r.text}")
 
