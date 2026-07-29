@@ -13,6 +13,10 @@ streamlit_app.py
   1) 영화 목록   : 등록된 영화를 카드 형태로 표시 (포스터/평점 포함)
   2) 영화 추가   : 제목/개봉일/감독/장르/포스터 URL 입력 후 등록
   3) 리뷰        : 영화 선택 → 리뷰 작성(감성 자동 분석) + 최근 10개 리뷰 표시
+
+참고
+  1) 포스터 이미지 생성 방법
+  - "https://www.themoviedb.org/" TMDB(영화 데이터베이스) 웹페이지 접속 → 영화 검색 → 포스터 우클릭 → "이미지 주소 복사(Copy image address)"
 """
 
 import os
@@ -90,7 +94,8 @@ st.caption("FastAPI 백엔드 + Streamlit 프론트엔드 · 리뷰 감성 자�
 # 사이드바: 백엔드 연결 상태 표시
 with st.sidebar:
     st.header("⚙️ 연결 정보")
-    st.write(f"**백엔드**: `{API_URL}`")
+    # 필요 시 아래 주석친 코드 참고(2026.07.29 minjae)
+    # st.write(f"**백엔드**: `{API_URL}`")
     health = api_get("/health")
     if health is not None and health.status_code == 200:
         st.success("✅ 백엔드 연결됨")
@@ -128,7 +133,8 @@ with tab_list:
                         if poster and isinstance(poster, str) and poster.strip():
                             try:
                                 st.image(poster, use_container_width=True)
-                            except Exception:
+                            except Exception as e:
+                                st.error(str(e))
                                 st.caption("🖼️ 포스터를 불러올 수 없습니다.")
                         else:
                             st.caption("🖼️ 등록된 포스터가 없습니다.")
