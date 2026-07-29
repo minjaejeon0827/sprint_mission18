@@ -120,8 +120,18 @@ with tab_list:
             for idx, movie in enumerate(movies):
                 with cols[idx % 3]:
                     with st.container(border=True):
-                        if movie.get("poster_url"):
-                            st.image(movie["poster_url"], use_container_width=True)
+                        # 포스터 표시 (안전하게)
+                        #  - poster_url 이 None/빈문자열이면 건너뜀
+                        #  - URL 이 있어도 깨진 주소/로딩 실패 시 앱이 죽지 않도록
+                        #    try/except 로 감싸고, 실패하면 대체 문구를 보여줌
+                        poster = movie.get("poster_url")
+                        if poster and isinstance(poster, str) and poster.strip():
+                            try:
+                                st.image(poster, use_container_width=True)
+                            except Exception:
+                                st.caption("🖼️ 포스터를 불러올 수 없습니다.")
+                        else:
+                            st.caption("🖼️ 등록된 포스터가 없습니다.")
                         st.markdown(f"### {movie['title']}")
                         st.write(f"📅 개봉일: {movie.get('release_date') or '-'}")
                         st.write(f"🎬 감독: {movie.get('director') or '-'}")
