@@ -18,6 +18,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 #  main.py, database.py, sentiment.py, routers/ 등 전부 포함됩니다.
 COPY . .
 
+# 모델을 이미지에 미리 다운로드
+RUN python -c "from transformers import pipeline; pipeline('sentiment-analysis', model='matthewburke/korean_sentiment')"
+
 # 로그가 실시간으로 보이도록 (docker logs / 서버 로그)
 ENV PYTHONUNBUFFERED=1
 
