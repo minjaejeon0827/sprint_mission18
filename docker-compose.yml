@@ -2,34 +2,40 @@
 # 사용법: 이 파일이 있는 폴더에서  docker compose up -d --build
 #   - 프론트엔드: http://localhost:8501
 #   - 백엔드 API 문서: http://localhost:8000/docs
+#
+# 💡 같은 폴더에 .env 파일이 있으면 docker compose 가 자동으로 읽어
+#    아래 ${변수:-기본값} 자리에 채워줍니다.
+#    (.env 가 없으면 각 변수의 기본값이 사용됩니다.)
 version: "3.9"
 
 services:
   backend:
     build: ./backend
-    image: sprint_mission18-backend-movie-review:v1
     ports:
       # 호스트 8000 → 컨테이너 8000 (Dockerfile 의 EXPOSE 8000 과 동일)
       - "8000:8000"
     environment:
       # API 키(인증)와 CORS 허용 출처를 환경변수로 주입
-      - API_KEYS=my-secret-key-12345
-      - CORS_ORIGINS=http://localhost:8501
+      # .env 값이 있으면 그 값을, 없으면 : 뒤의 기본값을 사용
+      - API_KEYS=${API_KEYS:-my-secret-key-12345}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:8501}
       # 감성 분석 모델 사용 여부 (0 이면 규칙 기반만 사용)
-      - USE_ML_MODEL=1
+      - USE_ML_MODEL=${USE_ML_MODEL:-1}
+      - SENTIMENT_MODEL=${SENTIMENT_MODEL:-matthewburke/korean_sentiment}
     volumes:
       # Bind Mount: movies.db 가 호스트에도 저장되어 컨테이너 삭제 후에도 보존
       - ./backend:/app
 
   frontend:
     build: ./frontend
-    image: sprint_mission18-frontend-movie-review:v1
     ports:
       - "8501:8501"
     environment:
       # Docker Compose 안에서는 서비스 이름(backend)이 곧 호스트명이 됩니다.
       # backend 컨테이너의 8000 포트로 접근합니다.
+      # 이 값은 compose 내부 통신용이므로 backend:8000 으로 고정합니다.
       - BACKEND_URL=http://backend:8000
-      - API_KEY=my-secret-key-12345
+      # API 키는 백엔드 API_KEYS 와 일치해야 하므로 같은 .env 값을 참조
+      - API_KEY=${API_KEYS:-my-secret-key-12345}
     depends_on:
       - backend
