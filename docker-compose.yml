@@ -7,6 +7,7 @@ version: "3.9"
 services:
   backend:
     build: ./backend
+    image: sprint_mission18-backend-movie-review:v1
     ports:
       # 호스트 8000 → 컨테이너 8000 (Dockerfile 의 EXPOSE 8000 과 동일)
       - "8000:8000"
@@ -22,6 +23,7 @@ services:
 
   frontend:
     build: ./frontend
+    image: sprint_mission18-frontend-movie-review:v1
     ports:
       - "8501:8501"
     environment:
