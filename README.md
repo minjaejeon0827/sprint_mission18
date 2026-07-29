@@ -85,7 +85,7 @@ streamlit run streamlit_app.py
 # `--cpu-boost` 추가 (CPU 부스트 — 이게 핵심)
 # `--timeout 300` 추가
 gcloud run deploy movie-review-api-service \
---image asia-northeast3-docker.pkg.dev/backend-movie-review/movie-review-api-repo/movie-review-api:v1 \
+--image asia-northeast3-docker.pkg.dev/my-project-id/movie-review-api-repo/movie-review-api:v1 \
 --region asia-northeast3 \
 --port 8000 \
 --memory 2Gi \
