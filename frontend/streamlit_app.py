@@ -19,7 +19,9 @@ streamlit_app.py
   2) "https://www.themoviedb.org/" TMDB(영화 데이터베이스) 웹페이지 접속 → 영화 검색 → 포스터 우클릭 → "이미지 주소 복사(Copy image address)"
 
 참고
-  - Streamlit: https://docs.streamlit.io/develop/api-reference/media/st.image
+  - Streamlit
+    참고: https://docs.streamlit.io/develop/api-reference/media/st.image
+    참고 2: https://docs.streamlit.io/develop/api-reference/layout/st.container
 """
 
 import os
@@ -190,7 +192,7 @@ with tab_list:
             cols = st.columns(per_row)
             for idx, movie in enumerate(movies):
                 with cols[idx % per_row]:
-                    with st.container(border=True, width=poster_w+10):
+                    with st.container(border=True):
                         # 포스터 표시 (안전하게)
                         #  - poster_url 이 None/빈문자열이면 건너뜀
                         #  - URL 이 있어도 깨진 주소/로딩 실패 시 앱이 죽지 않도록
