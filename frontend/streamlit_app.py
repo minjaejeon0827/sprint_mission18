@@ -17,6 +17,9 @@ streamlit_app.py
 포스터 이미지 생성 방법
   1) 나무위키 웹페이지 접속 → 영화 검색 → 포스터 우클릭 → "이미지 주소 복사(Copy image address)"
   2) "https://www.themoviedb.org/" TMDB(영화 데이터베이스) 웹페이지 접속 → 영화 검색 → 포스터 우클릭 → "이미지 주소 복사(Copy image address)"
+
+참고
+  - Streamlit st.image: https://docs.streamlit.io/develop/api-reference/media/st.image
 """
 
 import os
