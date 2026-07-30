@@ -131,6 +131,26 @@ def show_image_responsive(image, width=None):
 #             # 두 인자 모두 없는 아주 옛 버전 → 인자 없이 표시
 #             st.image(image)
 
+def bordered_container(width=None):
+    """
+    테두리 있는 컨테이너를 Streamlit 버전에 상관없이 안전하게 만듭니다.
+
+    st.container 의 width 파라미터는 Streamlit 1.43+ 에서만 지원됩니다.
+    배포 환경의 버전이 낮으면
+      "st.container() got an unexpected keyword argument 'width'"
+    오류가 나므로, width 지정을 시도하되 실패하면 자동으로 생략합니다.
+
+    (참고: 카드 컨테이너의 폭은 사실 '한 줄에 표시할 영화 수'를 늘리는 것으로도
+     충분히 줄어듭니다. width 는 그 위에 얹는 보조 수단입니다.)
+    """
+    if width is not None:
+        try:
+            return st.container(border=True, width=width)
+        except TypeError:
+            # 구버전: width 미지원 → 테두리만 있는 컨테이너로 폴백
+            pass
+    return st.container(border=True)
+
 # ==================================================================
 #  페이지 기본 설정
 # ==================================================================
@@ -169,6 +189,12 @@ with st.sidebar:
     st.caption("모든 데이터는 백엔드에서 관리됩니다.")
 
 
+# 직전 동작(등록 등)에서 남긴 안내 메시지가 있으면 한 번 보여주고 지웁니다.
+# (st.rerun 후에도 성공 메시지를 사용자에게 전달하기 위한 패턴)
+_flash = st.session_state.pop("flash_message", None)
+if _flash:
+    st.success(_flash)
+
 tab_list, tab_add, tab_review = st.tabs(["📋 영화 목록", "➕ 영화 추가", "📝 리뷰"])
 
 
@@ -192,7 +218,10 @@ with tab_list:
             cols = st.columns(per_row)
             for idx, movie in enumerate(movies):
                 with cols[idx % per_row]:
-                    with st.container(border=True):
+                    # 카드 컨테이너: 포스터보다 약간 넓게 폭을 제한
+                    #  (width 는 최신 Streamlit 에서만 적용되고,
+                    #   구버전에서는 자동으로 생략되어 오류가 나지 않음)
+                    with bordered_container(width=poster_w + 24):
                         # 포스터 표시 (안전하게)
                         #  - poster_url 이 None/빈문자열이면 건너뜀
                         #  - URL 이 있어도 깨진 주소/로딩 실패 시 앱이 죽지 않도록
@@ -270,7 +299,11 @@ with tab_add:
                 }
                 r = api_post("/movies", json=payload)
                 if r is not None and r.status_code == 201:
-                    st.success(f"'{title}' 영화가 등록되었습니다! '영화 목록' 탭에서 확인하세요.")
+                    # 등록 성공 → 즉시 재실행하여 '영화 목록' 탭에 바로 반영
+                    #  (Streamlit 은 rerun 시점에 모든 탭을 새로 그리므로,
+                    #   방금 등록한 영화가 목록에 곧바로 나타납니다.)
+                    st.session_state["flash_message"] = f"✅ '{title}' 영화가 등록되었습니다! '영화 목록' 탭에서 확인하세요."
+                    st.rerun()
                 elif r is not None:
                     st.error(f"등록 실패: {r.status_code} - {r.text}")
 
@@ -311,13 +344,17 @@ with tab_review:
                             f"/movies/{selected_movie_id}/reviews",
                             json={"author": author.strip(), "content": content.strip()},
                         )
+                        
                     if r is not None and r.status_code == 201:
                         data = r.json()
-                        st.success(
-                            f"리뷰가 등록되었습니다! "
-                            f"감성 분석 결과: **{sentiment_badge(data['sentiment'])}** "
+                        # 감성 분석 결과를 flash 로 넘기고 재실행 →
+                        # '최근 리뷰' 목록과 영화 목록의 평균 점수가 즉시 갱신됨
+                        st.session_state["flash_message"] = (
+                            f"✅ 리뷰가 등록되었습니다! "
+                            f"감성 분석 결과: {sentiment_badge(data['sentiment'])} "
                             f"(긍정 확률 {data['score']*100:.0f}%)"
                         )
+                        st.rerun()
                     elif r is not None:
                         st.error(f"등록 실패: {r.status_code} - {r.text}")
 
