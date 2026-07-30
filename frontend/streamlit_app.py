@@ -367,20 +367,33 @@ with tab_review:
         if not reviews:
             st.info("아직 등록된 리뷰가 없습니다.")
         else:
-            # 표 형태로 최근 리뷰 표시
-            table_rows = []
+            # 각 리뷰를 한 행씩 그리고, 행 끝에 삭제 버튼을 배치합니다.
+            # (st.dataframe 은 정적 표라 버튼을 넣을 수 없으므로 st.columns 로 구성)
+
+            # 헤더 행
+            h = st.columns([1, 1, 1.4, 3.6, 1.2, 1, 1])
+            for col, name in zip(
+                h, ["리뷰 ID", "영화 ID", "작성자", "리뷰 내용", "감성", "점수", "삭제"]
+            ):
+                col.markdown(f"**{name}**")
+            st.divider()
+
             for rv in reviews:
-                table_rows.append(
-                    {
-                        "리뷰 ID": rv["id"],
-                        "영화 ID": rv["movie_id"],
-                        "작성자": rv["author"],
-                        "등록일": rv.get("created_at", "-"),
-                        "리뷰 내용": rv["content"],
-                        "감성": sentiment_badge(rv.get("sentiment")),
-                        "점수": f"{(rv.get('score') or 0)*100:.0f}%",
-                    }
-                )
-            st.dataframe(table_rows, use_container_width=True, hide_index=True)
+                c = st.columns([1, 1, 1.4, 3.6, 1.2, 1, 1])
+                c[0].write(rv["id"])
+                c[1].write(rv["movie_id"])
+                c[2].write(rv["author"])
+                c[3].write(rv["content"])
+                c[4].write(sentiment_badge(rv.get("sentiment")))
+                c[5].write(f"{(rv.get('score') or 0) * 100:.0f}%")
+                # 리뷰별 고유 key 로 삭제 버튼 배치
+                if c[6].button("🗑️", key=f"del_review_{rv['id']}", help="이 리뷰 삭제"):
+                    d = api_delete(f"/reviews/{rv['id']}")
+                    if d is not None and d.status_code == 200:
+                        # 삭제 성공 → 즉시 재실행하여 목록·평점 갱신
+                        st.session_state["flash_message"] = "🗑️ 리뷰가 삭제되었습니다."
+                        st.rerun()
+                    else:
+                        st.error("리뷰 삭제에 실패했습니다.")
     elif resp is not None:
         st.error(f"리뷰 조회 실패: {resp.status_code}")
