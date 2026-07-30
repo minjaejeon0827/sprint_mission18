@@ -13,6 +13,12 @@
 
 ---
 
+# 보고서
+
+[바로가기](https://minjaejeon0827.github.io/sprint_mission18/reports/보고서.pdf)
+
+---
+
 ## 📁 디렉토리 구조
 
 ```
