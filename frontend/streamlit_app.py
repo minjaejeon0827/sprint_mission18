@@ -302,7 +302,7 @@ with tab_add:
                     # 등록 성공 → 즉시 재실행하여 '영화 목록' 탭에 바로 반영
                     #  (Streamlit 은 rerun 시점에 모든 탭을 새로 그리므로,
                     #   방금 등록한 영화가 목록에 곧바로 나타납니다.)
-                    st.session_state["flash_message"] = f"✅ '{title}' 영화가 등록되었습니다! '영화 목록' 탭에서 확인하세요."
+                    st.session_state["flash_message"] = f"✅ '{title}' 영화가 등록되었습니다!"
                     st.rerun()
                 elif r is not None:
                     st.error(f"등록 실패: {r.status_code} - {r.text}")
