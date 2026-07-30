@@ -139,39 +139,6 @@ st.set_page_config(page_title="영화 리뷰 & 감성 분석", page_icon="🎬",
 st.title("🎬 영화 리뷰 & 감성 분석 서비스")
 st.caption("FastAPI 백엔드 + Streamlit 프론트엔드 · 리뷰 감성 자동 분석")
 
-# ==========================================
-# 상태 관리 (Session State) 초기화 세팅
-# ==========================================
-# 새 영화 등록
-# 제목
-if 'title' not in st.session_state:
-    st.session_state['title'] = ""
-        
-# 개봉일
-if 'release_date' not in st.session_state:
-    st.session_state['release_date'] = ""
-
-# 감독
-if 'director' not in st.session_state:
-    st.session_state['director'] = ""
-
-# 장르
-if 'genre' not in st.session_state:
-    st.session_state['genre'] = ""
-
-# 포스터 URL
-if 'poster_url' not in st.session_state:
-    st.session_state['poster_url'] = ""
-
-# 리뷰 작성 및 감성 분석
-# 작성자 이름
-if 'author' not in st.session_state:
-    st.session_state['author'] = ""
-
-# 리뷰 내용
-if 'content' not in st.session_state:
-    st.session_state['content'] = ""
-
 # 사이드바: 백엔드 연결 상태 표시
 with st.sidebar:
     st.header("⚙️ 연결 정보")
@@ -276,39 +243,34 @@ with tab_list:
 with tab_add:
     st.subheader("새 영화 등록")
 
-    with st.form("add_movie_form"):
-        st.session_state['title'] = st.text_input(key="title", label="제목 *", placeholder="예: 인터스텔라")
+    with st.form("add_movie_form", clear_on_submit=True):
+        title = st.text_input("제목 *", placeholder="예: 인터스텔라")
         col1, col2 = st.columns(2)
         with col1:
-            st.session_state['release_date'] = st.text_input(key="release_date", label="개봉일", placeholder="예: 2014-11-06")
-            st.session_state['director'] = st.text_input(key="director", label="감독", placeholder="예: 크리스토퍼 놀란")
+            release_date = st.text_input("개봉일", placeholder="예: 2014-11-06")
+            director = st.text_input("감독", placeholder="예: 크리스토퍼 놀란")
         with col2:
-            st.session_state['genre'] = st.text_input(key="genre", label="장르", placeholder="예: SF, 드라마")
-            st.session_state['poster_url'] = st.text_input(
-                key="poster_url", label="포스터 URL", placeholder="https://... (나무위키 등의 이미지 주소)"
+            genre = st.text_input("장르", placeholder="예: SF, 드라마")
+            poster_url = st.text_input(
+                "포스터 URL", placeholder="https://... (나무위키 등의 이미지 주소)"
             )
 
         submitted = st.form_submit_button("등록하기", type="primary", use_container_width=True)
 
         if submitted:
-            if not st.session_state['title'].strip():
+            if not title.strip():
                 st.warning("제목은 필수 입력 항목입니다.")
             else:
                 payload = {
-                    "title": st.session_state['title'].strip(),
-                    "release_date": st.session_state['release_date'].strip() or None,
-                    "director": st.session_state['director'].strip() or None,
-                    "genre": st.session_state['genre'].strip() or None,
-                    "poster_url": st.session_state['poster_url'].strip() or None,
+                    "title": title.strip(),
+                    "release_date": release_date.strip() or None,
+                    "director": director.strip() or None,
+                    "genre": genre.strip() or None,
+                    "poster_url": poster_url.strip() or None,
                 }
                 r = api_post("/movies", json=payload)
                 if r is not None and r.status_code == 201:
-                    st.success(f"'{st.session_state['title']}' 영화가 등록되었습니다! '영화 목록' 탭에서 확인하세요.")
-                    st.session_state['title'] = ""
-                    st.session_state['release_date'] = ""
-                    st.session_state['director'] = ""
-                    st.session_state['genre'] = ""
-                    st.session_state['poster_url'] = ""
+                    st.success(f"'{title}' 영화가 등록되었습니다! '영화 목록' 탭에서 확인하세요.")
                 elif r is not None:
                     st.error(f"등록 실패: {r.status_code} - {r.text}")
 
@@ -331,23 +293,23 @@ with tab_review:
         selected_label = st.selectbox("영화 선택", list(options.keys()))
         selected_movie_id = options[selected_label]
 
-        with st.form("add_review_form"):
-            st.session_state['author'] = st.text_input(key="author", label="작성자 이름 *", placeholder="예: 홍길동")
-            st.session_state['content'] = st.text_area(
-                key="content" , label="리뷰 내용 *", placeholder="영화에 대한 감상을 남겨주세요.", height=120
+        with st.form("add_review_form", clear_on_submit=True):
+            author = st.text_input("작성자 이름 *", placeholder="예: 홍길동")
+            content = st.text_area(
+                "리뷰 내용 *", placeholder="영화에 대한 감상을 남겨주세요.", height=120
             )
             review_submitted = st.form_submit_button(
                 "리뷰 등록 (감성 자동 분석)", type="primary", use_container_width=True
             )
 
             if review_submitted:
-                if not st.session_state['author'].strip() or not st.session_state['content'].strip():
+                if not author.strip() or not content.strip():
                     st.warning("작성자 이름과 리뷰 내용을 모두 입력해주세요.")
                 else:
                     with st.spinner("리뷰를 등록하고 감성을 분석하는 중..."):
                         r = api_post(
                             f"/movies/{selected_movie_id}/reviews",
-                            json={"author": st.session_state['author'].strip(), "content": st.session_state['content'].strip()},
+                            json={"author": author.strip(), "content": content.strip()},
                         )
                     if r is not None and r.status_code == 201:
                         data = r.json()
@@ -356,8 +318,6 @@ with tab_review:
                             f"감성 분석 결과: **{sentiment_badge(data['sentiment'])}** "
                             f"(긍정 확률 {data['score']*100:.0f}%)"
                         )
-                        st.session_state['author'] = ""
-                        st.session_state['content'] = ""
                     elif r is not None:
                         st.error(f"등록 실패: {r.status_code} - {r.text}")
 
