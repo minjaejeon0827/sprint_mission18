@@ -129,12 +129,16 @@ gcloud run deploy movie-review-api-service \
 | --- | --- | --- |
 | POST | `/movies` | 영화 등록 |
 | GET | `/movies` | 전체 영화 조회 (평균 감성 점수 포함) |
-| GET | `/movies/{id}` | 특정 영화 조회 |
-| DELETE | `/movies/{id}` | 특정 영화 삭제 (리뷰 함께 삭제) |
-| POST | `/movies/{id}/reviews` | 리뷰 등록 (감성 자동 분석) |
-| GET | `/movies/{id}/reviews` | 특정 영화의 리뷰 조회 |
-| GET | `/reviews?limit=10` | 전체 리뷰 조회 (최근순) |
-| GET | `/movies/{id}/rating` | 특정 영화의 평점(감성 평균) |
+| GET | `/movies/{movie_id}` | 특정 영화 조회 |
+| DELETE | `/movies/{movie_id}` | 특정 영화 삭제 (리뷰 함께 삭제) |
+| POST | `/movies/{movie_id}/reviews` | 리뷰 등록 (감성 자동 분석) |
+| GET | `/movies/{movie_id}/reviews` | 특정 영화의 리뷰 조회 |
+| GET | `/reviews ` | 전체 리뷰 조회 (최근순, 기본 10개) |
+| GET | `/movies/{movie_id}/rating` | 특정 영화의 평점(감성 점수 평균) |
+| DELETE | /reviews/{review_id} | 특정 리뷰 삭제 |
+| GET | / | 루트 (서비스 동작 확인) |
+| GET | /health | 헬스 체크 (로드밸런서·모니터링용) |
+
 
 ### 예시
 
