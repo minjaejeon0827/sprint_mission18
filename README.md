@@ -165,7 +165,7 @@ curl -X POST http://localhost:8000/movies/1/reviews \
 - `reviews` 테이블: id, movie_id(FK), author, content, sentiment, score, created_at
 - `reviews.movie_id` → `movies.id` (외래키, `ON DELETE CASCADE`)
 
-**ORM(SQLAlchemy)을 사용하지 않고 표준 라이브러리 `sqlite3`만으로** 구현했으며,
+표준 라이브러리 `sqlite3`**로 구현했으며,
 파라미터화된 쿼리(`?` 플레이스홀더)로 SQL 인젝션을 방지합니다.
 
 ---
